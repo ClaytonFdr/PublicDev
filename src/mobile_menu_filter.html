@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+	html, body {
+	  margin: 0;
+	  padding: 0;
+	  /* disabilita lo scrolling verticale e orizzontale */
+	  overflow: hidden;
+	}
+  
+	body, .sidebar-card {
+	  font-family: 'Roboto', sans-serif;
+	}
+	h4, h5 {
+	  font-weight: 500;
+	}
+	
+    /* Card principale */
+    .sidebar-card {
+      width: 225px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font: 14px/1.5;
+	  font-family: 'Roboto', sans-serif;
+      padding: 10px;
+    }
+    .sidebar-card h4 {
+      margin: 0 0 5px;
+      font-size: 16px;
+    }
+	
+	#lunghezza-label {
+	  font-size: 14px;
+	}
+	
+	#difficolta-label {
+	  font-size: 14px;
+	}
+	
+    .section {
+      margin-bottom: 16px;
+    }
+    .section label { display: block; margin-bottom: 4px; }
+
+    /* Slider lunghezza */
+    .dual-slider {
+      position: relative; height: 30px;
+    }
+    .dual-slider .track {
+      position: absolute; top:50%; left:0; right:0;
+      height:4px; background:#ccc; border-radius:2px;
+      transform: translateY(-50%);
+    }
+    .dual-slider .range {
+      position: absolute; top:50%;
+      height:4px; background:#175aa7; border-radius:2px;
+      transform: translateY(-50%);
+    }
+    .dual-slider input[type=range] {
+      position: absolute; top:0; left:0; width:100%; height:30px;
+      background:none; pointer-events:none; -webkit-appearance:none;
+    }
+    .dual-slider input[type=range]::-webkit-slider-thumb {
+      pointer-events: all; -webkit-appearance:none;
+      width:14px; height:14px; background:#175aa7;
+      border-radius:50%; cursor:pointer; margin-top:-5px;
+      border:none;
+    }
+    .range-values {
+      display:flex; justify-content: space-between;
+      font-size:12px; margin-top:4px;
+    }
+
+    /* Toggle difficoltà */
+    .toggle-group { display:flex; gap:8px; }
+    .toggle { display:flex; align-items:center; font-size:12px; }
+    .toggle span { margin-right:6px; white-space: nowrap; }
+    .toggle input { display:none; }
+    .switch {
+      width:32px; height:16px; border-radius:8px;
+      background:#ccc; position:relative; cursor:pointer;
+      transition: background .2s;
+    }
+    .switch::before {
+      content:""; width:12px; height:12px; background:#fff;
+      border-radius:50%; position:absolute; top:2px; left:2px;
+      transition: transform .2s;
+    }
+    .toggle input:checked + .switch {
+      background:#175aa7;
+    }
+    .toggle input:checked + .switch::before {
+      transform: translateX(16px);
+    }
+
+    /* Pulsanti */
+    .btn-filter {
+      display:block; width:100%; padding:4px 0;
+      background:#175aa7; color:#fff; border:none;
+      border-radius:8px; font-size:13px; cursor:pointer;
+	  margin-right: 8px;
+    }
+    .btn-filter:hover { background:#166bb0; }
+    .btn-clear {
+      display:block;
+      padding:4px 0; width:100%;
+	  margin-left: 8px;
+      background:#f0f0f0; color:#333; border:none;
+      border-radius:8px; font-size:13px; cursor:pointer;
+    }
+    .btn-clear:hover { background:#ddd; }
+	
+	.buttons-row {
+	  display: flex;
+	  gap: 35px;           /* spazio orizzontale fra i due */
+	  margin-bottom: 16px;/* distanza sotto la riga di bottoni */
+	}
+
+	.buttons-row .btn-filter,
+	.buttons-row .btn-clear {
+	  flex: 1;            /* stessa larghezza per entrambi */
+	  text-align: center;
+	}
+
+    /* Elenco itinerari */ 
+    .routes-list {
+      margin-top:24px;
+    }
+    .routes-list h5 {
+      margin:0 0 8px;
+      font-size:16px;
+      border-bottom:1px solid #00000080;
+      padding-bottom:4px;
+    }
+    .routes-list ul {
+      list-style:none;
+      margin:0; padding:0;
+      max-height: 300px; /* opzionale */
+      overflow-y: auto;
+    }
+    .routes-list li {
+      margin-bottom:8px;
+	  border-bottom:1px solid #eee;
+    }
+    .routes-list a {
+      text-decoration: none;
+      color: #333;
+      font-size:14px;
+      cursor: pointer;
+    }
+    .routes-list a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-card">
+    <!-- FILTRI -->
+    <h4>Filtra gli itinerari</h4>
+
+    <div class="section">
+      <label id="lunghezza-label">Lunghezza:</label>
+      <div class="dual-slider" id="lengthSlider">
+        <div class="track"></div>
+        <div class="range" id="lengthRangeBar"></div>
+        <input type="range" id="lengthMin" min="1" max="30" step="0.5" value="1">
+        <input type="range" id="lengthMax" min="1" max="30" step="0.5" value="30">
+      </div>
+      <div class="range-values">
+        <span id="lengthMinLabel">1 km</span>
+        <span id="lengthMaxLabel">30 km</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <label id="difficolta-label">Difficoltà:</label>
+      <div class="toggle-group">
+        <label class="toggle">
+          <span>Bassa</span>
+          <input type="checkbox" id="toggle-bassa" checked>
+          <div class="switch"></div>
+        </label>
+        <label class="toggle">
+          <span>Media</span>
+          <input type="checkbox" id="toggle-media" checked>
+          <div class="switch"></div>
+        </label>
+        <label class="toggle">
+          <span>Alta</span>
+          <input type="checkbox" id="toggle-alta" checked>
+          <div class="switch"></div>
+        </label>
+      </div>
+    </div>
+	<div class="buttons-row">
+		<button class="btn-clear">Azzera filtri</button>
+		<button class="btn-filter">Filtra itinerari</button>
+	</div>
+    <!-- ELENCO ITINERARI -->
+    <div class="routes-list">
+      <h5>Elenco Itinerari</h5>
+      <ul id="routesUl"></ul>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    // ID del MapWidget
+    const mapWidgetId = 'Map_342_widgetMap3489';
+
+    // memorizza tutte le route
+    window.routes = {};
+
+    // -------------- SETUP DUAL-SLIDER --------------
+    function setupDualSlider() {
+      const minIn  = document.getElementById('lengthMin'),
+            maxIn  = document.getElementById('lengthMax'),
+            bar    = document.getElementById('lengthRangeBar'),
+            lblMin = document.getElementById('lengthMinLabel'),
+            lblMax = document.getElementById('lengthMaxLabel'),
+            minVal = parseFloat(minIn.min),
+            maxVal = parseFloat(minIn.max);
+
+      function update() {
+        let v1 = parseFloat(minIn.value),
+            v2 = parseFloat(maxIn.value);
+        if (v1 > v2) [v1, v2] = [v2, v1];
+        const p1 = ((v1 - minVal)/(maxVal-minVal))*100,
+              p2 = ((v2 - minVal)/(maxVal-minVal))*100;
+        bar.style.left  = p1 + '%';
+        bar.style.width = (p2 - p1) + '%';
+        lblMin.textContent = v1 + ' km';
+        lblMax.textContent = v2 + ' km';
+      }
+      minIn.addEventListener('input', update);
+      maxIn.addEventListener('input', update);
+      update();
+    }
+
+    // -------------- FETCH INIZIALE TUTTE LE ROUTE --------------
+    function loadAllRoutes() {
+      // poligono Puglia (esempio)
+      const sel = encodeURI(
+        'wkt:POLYGON(('+
+        '15.1479493 42.3033080,'+
+        '14.8216552 41.2819251,'+
+        '18.3867185 39.7181813,'+
+        '18.8096924 40.9218238,'+
+        '15.1479493 42.3033080'+
+        '))'
+      );
+      const qs = 'selection='+sel+'&maxResults=200&format=json&model=PercorsoTuristico';
+
+      $.ajax({
+        url: 'https://www.mobility4future.com/ServiceMap/api/v1/',
+        method: 'GET',
+        data: qs,
+        processData: false,
+        success: resp => {
+          const features = resp.features 
+                         || (resp.Services && resp.Services.features) 
+                         || [];
+          features.forEach(f => fetchGeometry(f.properties.serviceUri));
+        },
+        error: (xhr,s,e) => console.error('Errore ServiceMap:',s,e)
+      });
+    }
+
+    function fetchGeometry(serviceUri) {
+      const url =
+        'https://www.mobility4future.com/ServiceMap/api/v1/' +
+        '?serviceUri=' + encodeURIComponent(serviceUri) +
+        '&attrs=geometry,dateObserved,zonaInteresse,elevazione,difficolta,tracciatoAscisse,link,descrizione,durata,lunghezza,nome' +
+        '&options=keyValues';
+
+      $.ajax({ url, method:'GET',
+        success: r => {
+          const b = r.realtime?.results?.bindings?.[0];
+          if (!b) return console.warn('No binding for',serviceUri);
+
+			// parse dei JSON-string
+			const geom       = JSON.parse(b.geometry.value);
+			const zona       = JSON.parse(b.zonaInteresse.value);
+			const elev       = JSON.parse(b.elevazione.value);
+			const xs         = JSON.parse(b.tracciatoAscisse.value);
+			const difficulty = b.difficolta.value;
+			const link       = b.link.value;
+			const descr      = decodeURIComponent(b.descrizione.value);
+			const duration   = b.durata.value;
+			const length     = b.lunghezza.value;
+			const nome       = decodeURIComponent(b.nome.value);
+
+			window.routes[serviceUri] = {
+			  name:        nome,
+			  feature:     { type: 'Feature', geometry: geom, properties: { name: nome } },
+			  zone:        zona,
+			  elevazione:  elev,
+			  ascisse:     xs,
+			  difficolta:  difficulty,
+			  link, description: descr,
+			  duration, length
+			};
+          // appena aggiunta, rinfresco lista
+          populateList();
+        },
+        error: ()=> console.error('Geometry error',serviceUri)
+      });
+    }
+
+    // -------------- POPOLA / AGGIORNA ELENCO ITINERARI --------------
+    function populateList(filtered) {
+      const ul = document.getElementById('routesUl');
+      ul.innerHTML = '';
+      // prendo tutto o filtrato
+      let arr = filtered
+              ? filtered.slice()
+              : Object.values(window.routes);
+      // ordina per lunghezza
+      arr.sort((a,b)=>parseFloat(a.length)-parseFloat(b.length));
+      arr.forEach(route=>{
+        const li = document.createElement('li'),
+              a  = document.createElement('a');
+        a.textContent = route.name;
+        a.href = '#';
+        a.onclick = e=>{
+          e.preventDefault();
+			// trigger verso Map, Scheda, Altitudine
+			window.parent.$('body').trigger({
+			  type: `showSelectorGeometryFromExternalContent_${mapWidgetId}`,
+			  targetWidget: mapWidgetId,
+			  passedData: route
+			});
+			window.parent.$('body').trigger({
+			  type: 'showSchedaWidget',
+			  targetWidget: 'ExternalContent_342_widgetExternalContent3488',
+			  passedData: route
+			});
+			window.parent.$('body').trigger({
+			  type: 'showAltitudeWidget',
+			  targetWidget: 'ExternalContent_342_widgetExternalContent3705',
+			  passedData: route
+			});
+        };
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+    }
+
+    // -------------- GESTIONE FILTRI --------------
+    function applyFilters() {
+      const min = parseFloat(document.getElementById('lengthMin').value),
+            max = parseFloat(document.getElementById('lengthMax').value);
+      const diffs = [];
+      if (document.getElementById('toggle-bassa').checked) diffs.push('Bassa');
+      if (document.getElementById('toggle-media').checked) diffs.push('Media');
+      if (document.getElementById('toggle-alta').checked)  diffs.push('Alta');
+      // filtra
+      const filtered = Object.values(window.routes).filter(r=>{
+        const L = parseFloat(r.length);
+        if (isNaN(L)||L<min||L>max) return false;
+        return diffs.length>0 ? diffs.includes(r.difficolta) : true;
+      });
+      populateList(filtered);
+    }
+
+    // -------------- INIT --------------
+    document.addEventListener('DOMContentLoaded', ()=>{
+      setupDualSlider();
+      loadAllRoutes();
+
+      document.querySelector('.btn-filter').addEventListener('click', applyFilters);
+      document.querySelector('.btn-clear').addEventListener('click', ()=>{
+        // reset UI
+        document.getElementById('lengthMin').value = 1;
+        document.getElementById('lengthMax').value = 30;
+        setupDualSlider();
+        ['bassa','media','alta'].forEach(id=>document.getElementById('toggle-'+id).checked=true);
+        populateList();
+      });
+    });
+  </script>
+</body>
+</html>
