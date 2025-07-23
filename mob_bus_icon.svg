@@ -7,7 +7,7 @@
         fill: #fff;               
       }
       .st1 {
-        fill: #10b689;
+        fill: {COLOR};
       }
       .line-text {
         fill: {COLOR};               
